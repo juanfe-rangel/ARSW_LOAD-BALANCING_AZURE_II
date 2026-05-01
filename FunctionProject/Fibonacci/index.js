@@ -1,27 +1,36 @@
-var bigInt = require("big-integer");
 module.exports = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
+    context.log('Processing request...');
 
-    let nth = req.body.nth
-    let nth_1 = bigInt.one;
-    let nth_2 = bigInt.zero;
-    let answer = bigInt.zero;
+    let nth = req.body?.nth;
 
-    if (nth < 0)
-        throw 'must be greater than 0'
-    else if (nth === 0)
-        answer = nth_2
-    else if (nth === 1)
-        answer = nth_1
-    else {
-        for (var i = 0; i < nth - 1; i++) {
-            answer = nth_2.add(nth_1)
-            nth_2 = nth_1
-            nth_1 = answer
-        }
+    if (nth === undefined) {
+        context.res = {
+            status: 400,
+            body: "Send { \"nth\": number }"
+        };
+        return;
+    }
+
+    nth = parseInt(nth);
+
+    if (nth < 0) {
+        context.res = {
+            status: 400,
+            body: "must be greater than 0"
+        };
+        return;
+    }
+
+    let a = 0, b = 1, temp;
+
+    for (let i = 0; i < nth; i++) {
+        temp = a;
+        a = b;
+        b = temp + b;
     }
 
     context.res = {
-        body: answer.toString()
+        status: 200,
+        body: a.toString()
     };
-}
+};
